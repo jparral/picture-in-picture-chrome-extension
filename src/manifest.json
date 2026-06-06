@@ -1,7 +1,7 @@
 {
-  "name": "Picture-in-Picture Extension (by Google)",
-  "description": "Watch video using Picture-in-Picture",
-  "version": "1.14",
+  "name": "Universal Picture-in-Picture",
+  "description": "Watch any video using Picture-in-Picture on any website.",
+  "version": "1.15",
   "icons": {
     "128": "assets/icon128.png"
   },
