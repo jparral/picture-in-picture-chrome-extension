@@ -12,13 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+function findAllVideos(root = document) {
+  let videos = Array.from(root.querySelectorAll('video'));
+  const elements = root.querySelectorAll('*');
+  for (const element of elements) {
+    if (element.shadowRoot) {
+      videos = videos.concat(findAllVideos(element.shadowRoot));
+    }
+  }
+  return videos;
+}
+
 function findLargestPlayingVideo() {
-  const videos = Array.from(document.querySelectorAll('video'))
+  const videos = findAllVideos()
     .filter(video => video.readyState != 0)
-    .filter(video => video.disablePictureInPicture == false)
     .sort((v1, v2) => {
-      const v1Rect = v1.getClientRects()[0]||{width:0,height:0};
-      const v2Rect = v2.getClientRects()[0]||{width:0,height:0};
+      const v1Rect = v1.getBoundingClientRect();
+      const v2Rect = v2.getBoundingClientRect();
       return ((v2Rect.width * v2Rect.height) - (v1Rect.width * v1Rect.height));
     });
 
@@ -59,6 +69,9 @@ function maybeUpdatePictureInPictureVideo(entries, observer) {
   if (video.hasAttribute('__pip__')) {
     document.exitPictureInPicture();
     return;
+  }
+  if (video.disablePictureInPicture) {
+    video.disablePictureInPicture = false;
   }
   await requestPictureInPicture(video);
 })();
