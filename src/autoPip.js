@@ -26,7 +26,17 @@ function findAllVideos(root = document) {
 function findLargestPlayingVideo() {
   const videos = findAllVideos()
     .filter((video) => video.readyState != 0)
+    .filter(video => {
+      const rect = video.getBoundingClientRect();
+      return rect.width >= 100 && rect.height >= 100;
+    })
     .sort((v1, v2) => {
+      // Prioritize playing videos.
+      const v1Playing = !v1.paused && !v1.ended;
+      const v2Playing = !v2.paused && !v2.ended;
+      if (v1Playing !== v2Playing) {
+        return v2Playing ? 1 : -1;
+      }
       const v1Rect = v1.getBoundingClientRect();
       const v2Rect = v2.getBoundingClientRect();
       return v2Rect.width * v2Rect.height - v1Rect.width * v1Rect.height;
@@ -40,12 +50,16 @@ function findLargestPlayingVideo() {
 }
 
 // Request video to automatically enter picture-in-picture when eligible.
-navigator.mediaSession.setActionHandler("enterpictureinpicture", () => {
+navigator.mediaSession.setActionHandler("enterpictureinpicture", async () => {
   const video = findLargestPlayingVideo();
   if (video) {
     if (video.disablePictureInPicture) {
       video.disablePictureInPicture = false;
     }
-    video.requestPictureInPicture();
+    try {
+      await video.requestPictureInPicture();
+    } catch (error) {
+      console.error('Failed to enter Picture-in-Picture mode:', error);
+    }
   }
 });
