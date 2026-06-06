@@ -43,17 +43,22 @@ chrome.contextMenus.onClicked.addListener(({ checked: autoPip }) => {
   updateContentScripts(autoPip);
 });
 
-function updateContentScripts(autoPip) {
+async function updateContentScripts(autoPip) {
   chrome.action.setTitle({title: `Automatic picture-in-picture (${autoPip ? "on" : "off"})`});
   chrome.action.setBadgeText({ text: autoPip ? "★" : "" });
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: ["autoPip"] });
+  } catch (e) {
+    // Ignore error if script is not registered.
+  }
   if (!autoPip) {
-    chrome.scripting.unregisterContentScripts({ ids: ["autoPip"] });
     return;
   }
   chrome.scripting.registerContentScripts([{
     id: "autoPip",
     js: ["autoPip.js"],
     matches: ["<all_urls>"],
-    runAt: "document_start"
+    runAt: "document_start",
+    allFrames: true
   }])
 }
